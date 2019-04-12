@@ -1,0 +1,328 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>xAPI JW Video Template</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+	<!-- using jw player to serve the video -->
+  	<script src="./js/jwplayer6/jwplayer.js"></script>
+
+  	<!-- Includes for ADL's xAPI Wrapper -->
+	<script type="text/javascript" src="./js/cryptojs_v3.1.2.js"></script>
+	<script type="text/javascript" src="./js/verbs.js"></script>
+	<script type="text/javascript" src="./js/xapistatement.js"></script>
+	<script type="text/javascript" src="./js/xapiwrapper.js"></script>
+	<!------------------------------------->
+
+	<link rel="stylesheet" href="xAPI-Dashboard-master/lib/nv.d3.css"></link>
+	<script type="text/javascript" src="xAPI-Dashboard-master/dist/xapidashboard.min.js"></script>
+	<script type="text/javascript" src="xAPI-Dashboard-master/dist/xapicollection.min.js"></script>
+
+</head>
+
+<!-- <body onload="find_bandwdith()"> -->
+<body>
+<div align="center">
+
+ <div class="page-header">
+       <p style="margin-bottom: 0.0px; margin-top: 0.0px; color: #303030; line-height: 30.0px;">
+<strong><a style="color: #0169A6; font-size: 50.0px; font-style: open sans "target="_blank" rel="nofollow"><b><h1 class="text-primary"><h1>xAPI JW Video Template Heading 1</a></h1></b>
+
+<h3>xAPI JW Video Template Heading 2</h3>
+    </div>
+
+ <br/><br/>
+
+</div>
+
+	   <div align="center", id="original">
+    <div id="mediaplayer1">
+    <a href="https://support.jwplayer.com/">JWPlayer HTML5 Player Error</a></div>
+        <script type="text/javascript">
+            playcount = 0;
+            var url = window.location.pathname;
+            var filename = url.substring(url.lastIndexOf('/')+1, url.lastIndexOf('.'));
+            jwplayer('mediaplayer1').setup({
+                width: "50%",
+                aspectratio: "16:9",
+                file: "./Turntable.mp4", //This is the MP4 file location Pixbay-video
+                autostart: false,
+            });
+
+
+		  	var firstname = prompt("What your first name?")
+
+		  		var conf = {
+            "endpoint" : "https://yourendpoint.com/xapi/", //must have the / at the end to work
+            "auth" : "Basic " + toBase64('Key-userame:Secret-Password'), //the : must be between the key and Secret
+		  };
+
+//statement definition
+			//Sends statements when video is paused
+		  	jwplayer().onPause(function(event){
+		  		var duration = jwplayer().getDuration()
+		  		var position = jwplayer().getPosition()
+				console.log("Paused at " + position + " seconds of " + duration + " seconds");
+				ADL.XAPIWrapper.changeConfig(conf);
+				//define the xapi statement being sent
+				var pausestatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+    "verb": {
+        "id": "http://adlnet.gov/expapi/verbs/Paused", //https://registry.tincanapi.com/#home/verbs
+        "display": {
+            "en-US": "Paused"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+	},
+	};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(pausestatement);
+        		var end = performance.now();
+       			console.log("Pause Statement Submitted");
+			}); //end onPause
+
+//statement definition
+			//Sends statements when video is played
+			jwplayer().onPlay(function(event){
+				console.log("Video Played");
+				if (playcount == 1){
+              			playcount++;
+            }
+				ADL.XAPIWrapper.changeConfig(conf);
+				//define the xapi statement being sent
+			  	var playstatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+  "verb": {
+      "id": "http://adlnet.gov/expapi/verbs/Played", //https://registry.tincanapi.com/#home/verbs
+        "display": {
+            "en-US": "Played"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+	},
+};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(playstatement);
+        		var end = performance.now();
+       			console.log("Play Statement Submitted");
+			});
+
+//statement definition
+			//Sends statements when video is Skipped
+			jwplayer().onSeek(function(event){
+				console.log("Skipped from " + event.position + " to " + event.offset);
+				ADL.XAPIWrapper.changeConfig(conf);
+				var skipstatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+  "verb": {
+      "id": "http://adlnet.gov/expapi/verbs/Skipped", //https://registry.tincanapi.com/#home/verbs
+      "display": {
+          "en-US": "Skipped"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+	},
+};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(skipstatement);
+        		var end = performance.now();
+       			console.log("Skip Statement Submitted");
+			});
+
+//statement definition
+			//Sends statements when video is Muted
+			jwplayer().onMute(function(event){
+				var muted = jwplayer().getMute();
+				if (muted){
+					console.log("Mute On");
+				}
+				else {
+					console.log("Mute Off");
+				}
+				ADL.XAPIWrapper.changeConfig(conf);
+				//define the xapi statement being sent
+				var mutestatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+  "verb": {
+      "id": "http://adlnet.gov/expapi/verbs/Muted", //https://registry.tincanapi.com/#home/verbs
+      "display": {
+          "en-US": "Mute"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+    },
+	};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(mutestatement);
+        		var end = performance.now();
+       			console.log("Mute Statement Submitted");
+			});
+
+//statement definition
+			//Sends statements when a video is watched to completion
+			jwplayer().onComplete(function(event){
+				console.log("Video Completed");
+				ADL.XAPIWrapper.changeConfig(conf);
+				//define the xapi statement being sent
+				var completestatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+    "actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+    },
+    "verb": {
+        "id": "http://adlnet.gov/expapi/verbs/Completed", //https://registry.tincanapi.com/#home/verbs
+        "display": {
+            "en-US": "Completed"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+	},
+	};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(completestatement);
+        		var end = performance.now();
+       			console.log("Complete Statement Submitted");
+			});
+
+//statement definition
+			//Sends statements when video stopped via exiting the page
+			jwplayer().onIdle(function(event){
+				console.log("Video Stopped");
+				ADL.XAPIWrapper.changeConfig(conf);
+				//define the xapi statement being sent
+				var stopstatement = {
+	"actor": {
+        "mbox": "mailto:" + firstname + "@user.com",
+        "name": firstname,
+        "objectType": "Agent"
+	},
+  "verb": {
+      "id": "http://adlnet.gov/expapi/verbs/Stopped", //https://registry.tincanapi.com/#home/verbs
+      "display": {
+          "en-US": "Stopped"
+        }
+    },
+    "object": {
+        "id": "https://company-landing-page.com/more-information.html", //Ideally this page would provide more information about the video
+        "definition": {
+            "name": {
+                "en-US": "This is the title of the statment in the LRS"
+            },
+            "description": {
+                "en-US": "This is the description in the LRS"
+            }
+        },
+        "objectType": "Activity"
+	},
+	};
+	//end statement definition
+				var start = performance.now();
+        		var result = ADL.XAPIWrapper.sendStatement(stopstatement);
+        		var end = performance.now();
+       			console.log("Stop Statement Submitted");
+			});
+
+			//Shows error message in the Console whenever one occurs
+			jwplayer().onError(function(even){
+				console.log("Video Error" + event.message);
+			});
+
+		</script>
+		<br/> <br/>
+	</div>
+	<p></p>
+<center>
+       <p style="margin-bottom: 0.0px; margin-top: 0.0px; color: #ec2f28; line-height: 30.0px;">
+<strong><a style="color: #ec2f28; font-size: 28.0px; font-family: open sans" href="https://registry.tincanapi.com/" target="_blank" rel="nofollow">xAPI Activity Types, Attachment Usages, Extensions, Verbs, and Profiles can be found here</a>.</strong></p>
+<p><a style="font-family: open sans">Complete the xAPI JWPlayer template.</p>
+<p>Submit the completed template to a webserver, or LMS and direct the user to the .index file.</p></a>
+
+
+<p></p>
+<p><a style="color: #ec2f28; font-size: 14px; font-family: open sans" onclick="newLightbox(this.href); return false;" href="https://github.com/philipagardner/JWPlayer-xAPI" target="_blank"><strong>My inspiration for this build</strong></a></p>
+
+</center>
+
+</body>
+</html>
